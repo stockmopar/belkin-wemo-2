@@ -44,6 +44,11 @@ ninja_install -g https://github.com/troykelly/belkin-wemo-2 (Requires ninja tool
 2. git clone https://github.com/troykelly/belkin-wemo-2.git
 3. cd belkin-wemo-2 && npm install
 
+###Issue Tracking
+Please report bugs, issues, feature requests via the GitHub issue tracker. It's what it's for...
+
+https://github.com/troykelly/ninja-itachir/issues
+
 ###History
 
 v0.0.1
