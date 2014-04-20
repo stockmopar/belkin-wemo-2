@@ -1,0 +1,31 @@
+{
+  "name": "belkin-wemo-2",
+  "version": "0.0.1",
+  "description": "Belkin Wemo Actuator and Sensor Driver",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies" : {
+    "wemo" : "0.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/troykelly/belkin-wemo-2"
+  },
+  "keywords": [
+    "belkin",
+    "wemo",
+    "upnp",
+    "actuator",
+    "sensor",
+    "switch",
+    "pir"
+  ],
+  "author": "Troy Kelly",
+  "license": "CC0-1-0",
+  "bugs": {
+    "url": "https://github.com/troykelly/belkin-wemo-2/issues"
+  },
+  "homepage": "https://github.com/troykelly/belkin-wemo-2"
+}
