@@ -27,16 +27,16 @@ I am yet to create a GUI for the configuration - you will just have to trust me 
 Things of note in the configuration file are that the rate of polling can be adjusted.
 
 ###Wiki Entry
-TBC
+http://wiki.ninjablocks.com/drivers/5353b30ad8b9a20002000a36
 
 ###Forum Post
-TBC
+http://forums.ninjablocks.com/index.php?p=/discussion/2732/belkin-wemo-driver
 
 ###Installation
 
 Install this Driver with:
 
-ninja_install -g git@github.com:troykelly/belkin-wemo-2.git (Requires ninja toolbelt)
+ninja_install -g https://github.com/troykelly/belkin-wemo-2 (Requires ninja toolbelt)
 
 ####Manual Installation
 
