@@ -2,16 +2,16 @@ var Device = require('./lib/device')
   , util = require('util')
   , stream = require('stream')
   , configHandlers = require('./lib/config-handlers')
-  , WeMo = require('wemo');
+  , WeMo = new require('wemo');
 
 // Give our driver a stream interface
-util.inherits(myDriver,stream);
+util.inherits(wemoDriver,stream);
 
 // Our greeting to the user.
-var HELLO_WORLD_ANNOUNCEMENT = {
+var FIRST_RUN_ANNOUNCEMENT = {
   "contents": [
-    { "type": "heading",      "text": "Hello World Driver Loaded" },
-    { "type": "paragraph",    "text": "The hello world driver has been loaded. You should not see this message again." }
+    { "type": "heading",      "text": "Belkin WeMo Driver Loaded" },
+    { "type": "paragraph",    "text": "The driver will now search for devices." }
   ]
 };
 
@@ -29,26 +29,77 @@ var HELLO_WORLD_ANNOUNCEMENT = {
  * @fires register - Emit this when you wish to register a device (see Device)
  * @fires config - Emit this when you wish to send config data back to the Ninja Platform
  */
-function myDriver(opts,app) {
+function wemoDriver(opts,app) {
 
   var self = this;
+  this._app = app;
+  this._opts = opts;
+  this._devices = {};
 
   app.on('client::up',function(){
+	  
+	  self._app.log.info('belkin-wemo-2: Starting up');
+	  
+	  var needSave = false;
 
     // The client is now connected to the Ninja Platform
 
     // Check if we have sent an announcement before.
     // If not, send one and save the fact that we have.
     if (!opts.hasSentAnnouncement) {
-      self.emit('announcement',HELLO_WORLD_ANNOUNCEMENT);
+      self.emit('announcement',FIRST_RUN_ANNOUNCEMENT);
       opts.hasSentAnnouncement = true;
       self.save();
     }
+    
+	if (!opts.pollrate) {
+		self._app.log.info('belkin-wemo-2: Initialising polling options');
+		opts.pollrate = 2;
+		needSave = true;
+	}
 
-    // Register a device
-    self.emit('register', new Device());
+	if (needSave) {self.save();}
+	
+	self.startSearch();
+	
+	setInterval(function() {
+		self.startSearch();
+	}, 60000)
+
   });
 };
+
+wemoDriver.prototype.startSearch = function() {
+	var self = this;
+	
+	self._app.log.debug('belkin-wemo-2: Searching for Belkin WeMo Devices');
+	
+	var client = WeMo.Search();
+	client.on('found', function(devicedata) {
+		var uuid = devicedata.UDN.split(':')[1];
+		if (!self._devices[uuid]) {
+			self._devices[uuid] = {};
+			self._devices[uuid].ip = devicedata.ip.toString();
+			self._devices[uuid].port = devicedata.port.toString();
+			self._devices[uuid].active = false;
+			self._devices[uuid].client = new Device(self, devicedata);
+			self.emit('register', self._devices[uuid].client);
+			self._app.log.debug('belkin-wemo-2: ' + uuid + ' New device found at ' + devicedata.ip.toString() + ':' + devicedata.port.toString());
+		} else {
+			if ((self._devices[uuid].ip === devicedata.ip && self._devices[uuid].port === devicedata.port) && self._devices[uuid].active) {
+				//self._app.log.debug('belkin-wemo-2: ' + uuid + ' Discovered already active device at ' + devicedata.ip.toString() + ':' + devicedata.port.toString());
+			} else if ((self._devices[uuid].ip === devicedata.ip && self._devices[uuid].port === devicedata.port) &! self._devices[uuid].active) {
+				self._app.log.debug('belkin-wemo-2: ' + uuid + ' Discovered halted device back at ' + devicedata.ip.toString() + ':' + devicedata.port.toString());
+				self._devices[uuid].client.refreshAndPoll(devicedata);
+			} else {
+				self._app.log.debug('belkin-wemo-2: ' + uuid + ' Device at ' + self._devices[uuid].ip + ':' + self._devices[uuid].port +' has changed to ' + devicedata.ip.toString() + ':' + devicedata.port.toString());
+				self._devices[uuid].ip = devicedata.ip;
+				self._devices[uuid].port= devicedata.port;
+				self._devices[uuid].client.refreshAndPoll(devicedata);
+			}
+		}
+	});
+}
 
 /**
  * Called when a user prompts a configuration.
@@ -60,7 +111,7 @@ function myDriver(opts,app) {
  * @param  {Object}   rpc.params Any input data the user provided
  * @param  {Function} cb      Used to match up requests.
  */
-myDriver.prototype.config = function(rpc,cb) {
+wemoDriver.prototype.config = function(rpc,cb) {
 
   var self = this;
   // If rpc is null, we should send the user a menu of what he/she
@@ -79,4 +130,4 @@ myDriver.prototype.config = function(rpc,cb) {
 
 
 // Export it
-module.exports = myDriver;
+module.exports = wemoDriver;
