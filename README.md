@@ -51,6 +51,12 @@ https://github.com/troykelly/ninja-itachir/issues
 
 ###History
 
+v0.0.2
+
+Support for lightswitch device types.
+
+Changed switches from Ninja Wemo type to generic switch.
+
 v0.0.1
 
 Status change polling.
